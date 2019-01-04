@@ -128,9 +128,11 @@ translate([0, 0, 50]) union() {
     foot();
     rotate([0, 0, -90])
     translate([leg_width / 2 - panel_corner_offset, leg_width / 2, 0])
-        panel_holder(panel_thickness=panel_thickness);
+        panel_holder(panel_thickness=panel_thickness,
+                     panel_finger=panel_finger);
     translate([-(leg_width / 2 - panel_corner_offset), leg_width / 2, 0])
-        panel_holder(panel_thickness=panel_thickness);
+        panel_holder(panel_thickness=panel_thickness,
+                     panel_finger=panel_finger);
 }
 
 plate_h=1;
