@@ -13,7 +13,7 @@
 
 $fn=200;
 
-leg_width = 50;
+leg_width = 50; // [40:]
 leg_edge_radius = 2;
 height = 50;
 screw_hole_d = 7;
@@ -59,24 +59,27 @@ module leg_body(height=height) {
 }
 
 // Alignment cone parameters
-cone_d1 = 36;
-cone_d2 = 21;
+cone_d1 = 36; // [cone_d2:leg_width-10]
+cone_d2 = 21; // [21:leg_width-10]
 cone_h = 15;
 
 // Foot
 module foot(height=height) {
     difference() {
-        translate([-25, -25, 0]) leg_body();
+        translate([-(leg_width / 2), -(leg_width / 2), 0]) leg_body();
         union() {
             // Alignment cone
             cylinder(h=cone_h, d1=cone_d1, d2=cone_d2);
             translate([0, 0, -0.199]) cylinder(h=0.2, d=cone_d1);
             // Screw head recess
-            well_h = 3.5;
-            translate([0, 0, cone_h - 0.1]) cylinder(h=well_h + 0.1, d=16);
+            recess_h = 3.5;
+            recess_d = 16;
+            translate([0, 0, cone_h - 0.1])
+                cylinder(h=recess_h + 0.1, d=recess_d);
             // Screw hole
-            translate([0, 0, cone_h + well_h - 0.1])
-                cylinder_outer(h=height - cone_h - well_h + 0.2, r=screw_hole_d / 2);
+            translate([0, 0, (cone_h + recess_h - 0.1)])
+                cylinder_outer(h=(height - cone_h - recess_h + 0.2),
+                               r=(screw_hole_d / 2));
         }
     }
 }
@@ -92,9 +95,13 @@ module plate(height) {
             translate([0, 0, height - 0.001])
                 difference() {
                     // Alignment cone
-                    cylinder(h=14.5, d1=35, d2=20);
+                    cylinder(h=(cone_h - 0.5),
+                             d1=(cone_d1 - 1), d2=(cone_d2 - 1));
                     // Screw head recess
-                    translate([0, 0, 9.5 - 0.1]) cylinder(h=5 + 0.2, d=16);
+                    recess_h=5;
+                    recess_d=16;
+                    translate([0, 0, (cone_h - recess_h - 0.5 - 0.1)])
+                        cylinder(h=(recess_h + 0.2), d=recess_d);
                 }
         }
         // Screw hole
@@ -102,38 +109,45 @@ module plate(height) {
     }
 }
 
-module panel_holder(panel_thickness=3, panel_finger=2) {
+module panel_holder(panel_thickness=3, panel_finger_width=2) {
     // Panel holder
-    translate([-(panel_thickness + panel_finger * 2) / 2 , -2, 0])
+    finger_length = 20;
+    finger_depth = finger_length;
+    translate([-(panel_thickness + panel_finger_width * 2) / 2 , -0.1, 0])
     difference() {
         // Main body
-        cube([panel_thickness + panel_finger * 2, 24, 20]);
+        cube([panel_thickness + panel_finger_width * 2,
+              finger_length + 0.1,
+              finger_depth]);
         // Panel slot
-        translate([panel_finger, 4, 2]) cube([panel_thickness, 22.1, 20.1]);
+        translate([panel_finger_width, 0, 2])
+            cube([panel_thickness,
+                  finger_length + 0.2,
+                  finger_depth + 0.1]);
         // 45deg cut on body
         rotate([45, 0, 0])
-            translate([-0.1, 18.4, -18.4])
-                cube([panel_thickness + panel_finger * 2 + 0.2, 15, 30]);
+            // TODO: Replace magic numbers with *math*
+            translate([-0.1, 15.7, -15.7])
+                cube([panel_thickness + panel_finger_width * 2 + 0.2, 15, 30]);
     }
 }
 
 panel_thickness = 3;
-panel_finger = 2;
-panel_holder_width = panel_thickness + panel_finger * 2;
+panel_finger_width = 2;
+panel_holder_width = panel_thickness + panel_finger_width * 2;
 panel_corner_offset = leg_edge_radius + panel_holder_width / 2;
 
 // Rear leg with 2 panel holders
-color("red")
 translate([0, 0, 50]) union() {
     foot();
     rotate([0, 0, -90])
     translate([leg_width / 2 - panel_corner_offset, leg_width / 2, 0])
         panel_holder(panel_thickness=panel_thickness,
-                     panel_finger=panel_finger);
+                     panel_finger_width=panel_finger_width);
     translate([-(leg_width / 2 - panel_corner_offset), leg_width / 2, 0])
         panel_holder(panel_thickness=panel_thickness,
-                     panel_finger=panel_finger);
+                     panel_finger_width=panel_finger_width);
 }
 
 plate_h=1;
-color("orange") translate([0, 0, -plate_h]) plate(height=plate_h);
+translate([0, 0, -plate_h]) plate(height=plate_h);
