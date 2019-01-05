@@ -50,10 +50,6 @@ module leg_body(height=height) {
             translate([leg_edge_radius, 0, 0,])
                 cube([leg_width-leg_edge_radius*2, leg_width, height]);
         }
-
-        // Screw hole
-        //translate([leg_width/2, leg_width/2, -1])
-        //    cylinder_outer(r=screw_diameter/2, h=height+2);
     }
 
 }
